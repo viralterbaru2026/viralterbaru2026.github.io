@@ -8,16 +8,5 @@
     "deskripsi": "tes1",
     "kategori": "indonesia",
     "cover": "covers/tes1-indonesia-part1.jpg"
-  },
-  {
-    "slug": "tes3-papua-part1",
-    "judul": "tes3",
-    "driveId": "gdgdg",
-    "tanggal": "2026-10-24",
-    "jam": "04:14",
-    "deskripsi": "tes3",
-    "kategori": "papua",
-    "popunder": true,
-    "cover": "covers/tes3-papua-part1.jpg"
   }
 ]
