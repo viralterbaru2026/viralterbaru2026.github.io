@@ -8,5 +8,15 @@
     "deskripsi": "tes1",
     "kategori": "indonesia",
     "cover": "covers/tes1-indonesia-part1.jpg"
+  },
+  {
+    "slug": "tes1-indonesia-part2",
+    "judul": "tes1",
+    "driveId": "rrer",
+    "tanggal": "2026-10-24",
+    "jam": "02:26",
+    "deskripsi": "tes2",
+    "kategori": "indonesia",
+    "cover": "covers/tes1-indonesia-part2.jpg"
   }
 ]
