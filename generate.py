@@ -27,7 +27,7 @@ LEGACY=str(CONFIG_DATA.get("legacy_site_url","")).rstrip("/")
 DEFAULT="assets/img/no-cover.svg"
 CATS=tuple(CONFIG_DATA.get("categories",["indonesia","papua","barat"]))
 ADS=CONFIG_DATA.get("ads",{}) if isinstance(CONFIG_DATA.get("ads",{}),dict) else {}
-AD_ENABLED=bool(ADS.get("enabled",False))
+AD_ENABLED=(ADS.get("enabled",False) is True or str(ADS.get("enabled",False)).strip().lower() in ("1","true","yes","on"))
 def ad(name):
     if not AD_ENABLED:return ""
     return str(ADS.get(name,"") or "").strip()
