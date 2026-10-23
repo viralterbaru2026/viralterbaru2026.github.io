@@ -27,7 +27,7 @@ LEGACY=str(CONFIG_DATA.get("legacy_site_url","")).rstrip("/")
 DEFAULT="assets/img/no-cover.svg"
 CATS=tuple(CONFIG_DATA.get("categories",["indonesia","papua","barat"]))
 ADS=CONFIG_DATA.get("ads",{}) if isinstance(CONFIG_DATA.get("ads",{}),dict) else {}
-AD_ENABLED=(ADS.get("enabled",False) is True or str(ADS.get("enabled",False)).strip().lower() in ("1","true","yes","on"))
+AD_ENABLED=bool(ADS.get("enabled",False))
 def ad(name):
     if not AD_ENABLED:return ""
     return str(ADS.get(name,"") or "").strip()
@@ -85,6 +85,7 @@ def rel(v):
 def main():
     vs=load(); ordered=sorted(vs,key=dt,reverse=True)
     it=open(os.path.join(TEMPLATES,"index.html"),encoding="utf-8").read()
+    it=it.replace("{{ SITE_NAME }}",esc(CONFIG_DATA.get("site_name","Viral Terbaru 2026"))).replace("{{ SITE_URL }}",esc(SITE_URL))
     open(os.path.join(BASE,"index.html"),"w",encoding="utf-8").write(it.replace("{{ VIDEO_CARDS }}","\n".join(card(v) for v in ordered)).replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile")).replace("{{ AD_NATIVE }}",ad("native")))
     os.makedirs(OUT,exist_ok=True)
     for f in os.listdir(OUT):
