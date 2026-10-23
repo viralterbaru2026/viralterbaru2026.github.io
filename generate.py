@@ -85,7 +85,7 @@ def rel(v):
 def main():
     vs=load(); ordered=sorted(vs,key=dt,reverse=True)
     it=open(os.path.join(TEMPLATES,"index.html"),encoding="utf-8").read()
-    open(os.path.join(BASE,"index.html"),"w",encoding="utf-8").write(it.replace("{{ VIDEO_CARDS }}","\n".join(card(v) for v in ordered)).replace("{{ AD_POPUNDER }}",ad("popunder")).replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile")).replace("{{ AD_NATIVE }}",ad("native")))
+    open(os.path.join(BASE,"index.html"),"w",encoding="utf-8").write(it.replace("{{ VIDEO_CARDS }}","\n".join(card(v) for v in ordered)).replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile")).replace("{{ AD_NATIVE }}",ad("native")))
     os.makedirs(OUT,exist_ok=True)
     for f in os.listdir(OUT):
         if f.endswith(".html"):os.remove(os.path.join(OUT,f))
@@ -95,17 +95,18 @@ def main():
         player_src=embed if embed else ("https://drive.google.com/file/d/"+str(v.get("driveId","" )).strip()+"/preview" if str(v.get("driveId") or "").strip() else "about:blank")
         player_mode="embed" if (embed or str(v.get("driveId") or "").strip()) else "telegram"
         smart=""
+        video_popunder=ad("popunder") if AD_ENABLED and v.get("popunder") is True else ""
         if AD_ENABLED and v.get("smartlink") is True:
             from urllib.parse import urlparse
             su=str(ADS.get("smartlink") or "").strip(); pu=urlparse(su)
             if pu.scheme=="https" and pu.hostname and not pu.username and not pu.password: smart=su
-        out=vt.replace("{{ JUDUL }}",esc(v["judul"])).replace("{{ DESKRIPSI }}",esc(v["deskripsi"])).replace("{{ DRIVE_ID }}",esc(v.get("driveId", ""))).replace("{{ PLAYER_SRC }}",esc(player_src)).replace("{{ PLAYER_MODE }}",esc(player_mode)).replace("{{ SMARTLINK }}",esc(smart)).replace("{{ KATEGORI }}",esc(v["kategori"])).replace("{{ TANGGAL }}",esc(dtext(v))).replace("{{ COVER }}",esc(cover(v,True))).replace("{{ OG_COVER }}",esc(og(v))).replace("{{ PAGE_URL }}",esc(f'{SITE_URL}/videos/{v["slug"]}.html' if SITE_URL else f'videos/{v["slug"]}.html'))
+        out=vt.replace("{{ JUDUL }}",esc(v["judul"])).replace("{{ DESKRIPSI }}",esc(v["deskripsi"])).replace("{{ DRIVE_ID }}",esc(v.get("driveId", ""))).replace("{{ PLAYER_SRC }}",esc(player_src)).replace("{{ PLAYER_MODE }}",esc(player_mode)).replace("{{ SMARTLINK }}",esc(smart)).replace("{{ VIDEO_POPUNDER }}",video_popunder).replace("{{ KATEGORI }}",esc(v["kategori"])).replace("{{ TANGGAL }}",esc(dtext(v))).replace("{{ COVER }}",esc(cover(v,True))).replace("{{ OG_COVER }}",esc(og(v))).replace("{{ PAGE_URL }}",esc(f'{SITE_URL}/videos/{v["slug"]}.html' if SITE_URL else f'videos/{v["slug"]}.html'))
         related=[x for x in ordered if x["slug"]!=v["slug"]]
         related_html='\n'.join(rel(x) for x in related) or '<p>Belum ada video lainnya.</p>'
         native_raw=ad("native")  # kode Adsterra dipakai apa adanya (container ID tidak diubah)
         native_html=f'<div class="related-native-ad ad-slot" aria-label="Iklan Native">{native_raw}</div>' if native_raw else ''
         out=out.replace("{{ RELATED_VIDEOS }}",related_html).replace("{{ RELATED_NATIVE_AD }}",native_html)
-        out=out.replace("{{ AD_POPUNDER }}",ad("popunder")).replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile"))
+        out=out.replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile"))
         open(os.path.join(OUT,v["slug"]+".html"),"w",encoding="utf-8").write(out)
     print("Generated",len(vs),"videos")
 if __name__=="__main__":main()
