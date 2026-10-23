@@ -34,7 +34,11 @@
     bait.className = 'adsbox ad-banner adsbygoogle ad-placement';
     bait.setAttribute('aria-hidden', 'true');
     bait.style.cssText = 'position:absolute!important;left:-10000px!important;top:-10000px!important;display:block!important;width:12px!important;height:12px!important;';
-    document.body.appendChild(bait);
+    // Tambahkan umpan ke overlay yang dikecualikan dari aturan access-checking.
+    // Jika diletakkan langsung di body, CSS html.access-checking menyembunyikannya
+    // dan pemeriksaan akan salah mengira AdBlock aktif pada semua pengunjung.
+    var host = document.getElementById('accessGuard') || document.body;
+    host.appendChild(bait);
     var cs = window.getComputedStyle(bait);
     var blocked = bait.offsetHeight === 0 || bait.offsetWidth === 0 || cs.display === 'none' || cs.visibility === 'hidden';
     bait.remove();
