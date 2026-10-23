@@ -26,3 +26,14 @@
 /* Penomoran halaman beranda ditampilkan di atas dan bawah daftar video. */
 .home-pagination-top{max-width:980px;margin:1.1rem auto 0;padding:0 1rem}
 .home-below .related-pagination{margin:1rem 0 .5rem}
+
+
+/* Access guard: layar pemblokiran VPN/proxy dan AdBlock. */
+html.access-checking body{overflow:hidden}
+html.access-checking body>*:not(#accessGuard){visibility:hidden!important}
+#accessGuard{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:rgba(8,15,30,.97);color:#fff;visibility:visible!important}
+#accessGuard .access-guard-card{width:min(100%,520px);padding:2rem 1.4rem;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:#111c31;box-shadow:0 20px 60px rgba(0,0,0,.45);text-align:center}
+#accessGuard h2{font-size:clamp(1.35rem,4vw,1.8rem);line-height:1.25;margin-bottom:.9rem}
+#accessGuard p{color:#dbeafe;margin:.55rem 0;line-height:1.65}
+#accessGuard .access-guard-status{font-size:.9rem;color:#cbd5e1;margin-top:1rem}
+#accessGuard .access-guard-reload{margin-top:1rem;padding:.7rem 1.1rem;border:0;border-radius:9px;background:#fff;color:#0f172a;font-weight:700;cursor:pointer}

@@ -86,7 +86,7 @@ def main():
     vs=load(); ordered=sorted(vs,key=dt,reverse=True)
     it=open(os.path.join(TEMPLATES,"index.html"),encoding="utf-8").read()
     it=it.replace("{{ SITE_NAME }}",esc(CONFIG_DATA.get("site_name","Viral Terbaru 2026"))).replace("{{ SITE_URL }}",esc(SITE_URL))
-    open(os.path.join(BASE,"index.html"),"w",encoding="utf-8").write(it.replace("{{ VIDEO_CARDS }}","\n".join(card(v) for v in ordered)).replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile")).replace("{{ AD_NATIVE }}",ad("native")))
+    open(os.path.join(BASE,"index.html"),"w",encoding="utf-8").write(it.replace("{{ VIDEO_CARDS }}","\n".join(card(v) for v in ordered)).replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile")).replace("{{ AD_NATIVE }}",ad("native")).replace("</head>", '<script src="assets/js/access-guard.js"></script></head>'))
     os.makedirs(OUT,exist_ok=True)
     for f in os.listdir(OUT):
         if f.endswith(".html"):os.remove(os.path.join(OUT,f))
@@ -108,6 +108,7 @@ def main():
         native_html=f'<div class="related-native-ad ad-slot" aria-label="Iklan Native">{native_raw}</div>' if native_raw else ''
         out=out.replace("{{ RELATED_VIDEOS }}",related_html).replace("{{ RELATED_NATIVE_AD }}",native_html)
         out=out.replace("{{ AD_POPUNDER }}","").replace("{{ AD_SOCIAL_BAR }}",ad("social_bar")).replace("{{ AD_BANNER_DESKTOP }}",ad("banner_desktop")).replace("{{ AD_BANNER_MOBILE }}",ad("banner_mobile"))
+        out=out.replace("</head>", '<script src="../assets/js/access-guard.js"></script></head>')
         open(os.path.join(OUT,v["slug"]+".html"),"w",encoding="utf-8").write(out)
     print("Generated",len(vs),"videos")
 if __name__=="__main__":main()
