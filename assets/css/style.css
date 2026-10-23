@@ -22,3 +22,7 @@
 .video-card img{height:auto;aspect-ratio:16/9}
 .home-below{max-width:980px;margin:0 auto;padding:0 1rem}
 @media(max-width:767px){.video-grid{gap:.7rem;padding:0 .65rem}.home-below{padding:0 .65rem}.video-card h3{font-size:.9rem}.card-body{padding:.65rem}}
+
+/* Penomoran halaman beranda ditampilkan di atas dan bawah daftar video. */
+.home-pagination-top{max-width:980px;margin:1.1rem auto 0;padding:0 1rem}
+.home-below .related-pagination{margin:1rem 0 .5rem}

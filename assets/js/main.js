@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const PER = 4; // jumlah video per halaman
   const buttons = Array.from(document.querySelectorAll('.filter-btn'));
   const grid = document.getElementById('videoGrid');
-  const nav = document.getElementById('homePagination');
+  const navs = Array.from(document.querySelectorAll('#homePaginationTop, #homePagination'));
   const cards = Array.from(document.querySelectorAll('.video-card'));
-  if (!grid || !nav) return;
+  if (!grid || !navs.length) return;
 
   let filter = 'all';
   let page = 1;
@@ -43,21 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
     cards.forEach(c => { c.style.display = 'none'; });
     list.slice((page - 1) * PER, page * PER).forEach(c => { c.style.display = ''; });
 
-    nav.innerHTML = '';
-    if (total > 1) {
-      nav.appendChild(makeBtn('\u2039', page - 1, { disabled: page === 1, aria: 'Halaman sebelumnya' }));
-      pageList(total).forEach(x => {
-        if (x === '...') {
-          const d = document.createElement('span');
-          d.className = 'page-dots';
-          d.textContent = '\u2026';
-          nav.appendChild(d);
-        } else {
-          nav.appendChild(makeBtn(x, x, { active: x === page }));
-        }
-      });
-      nav.appendChild(makeBtn('\u203a', page + 1, { disabled: page === total, aria: 'Halaman berikutnya' }));
-    }
+    navs.forEach(nav => {
+      nav.innerHTML = '';
+      if (total > 1) {
+        nav.appendChild(makeBtn('\u2039', page - 1, { disabled: page === 1, aria: 'Halaman sebelumnya' }));
+        pageList(total).forEach(x => {
+          if (x === '...') {
+            const d = document.createElement('span');
+            d.className = 'page-dots';
+            d.textContent = '\u2026';
+            nav.appendChild(d);
+          } else {
+            nav.appendChild(makeBtn(x, x, { active: x === page }));
+          }
+        });
+        nav.appendChild(makeBtn('\u203a', page + 1, { disabled: page === total, aria: 'Halaman berikutnya' }));
+      }
+    });
 
     try { history.replaceState(null, '', (filter === 'all' && page === 1) ? location.pathname + location.search : '#' + filter + '-' + page); } catch (e) {}
     if (scroll) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
