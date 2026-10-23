@@ -28,6 +28,7 @@
     "jam": "04:14",
     "deskripsi": "tes3",
     "kategori": "papua",
+    "popunder": true,
     "cover": "covers/tes3-papua-part1.jpg"
   }
 ]
