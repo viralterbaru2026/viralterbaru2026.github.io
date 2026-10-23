@@ -30,19 +30,29 @@
   }
 
   function hasAdBlock() {
-    var bait = document.createElement('div');
-    bait.className = 'adsbox ad-banner adsbygoogle ad-placement';
-    bait.setAttribute('aria-hidden', 'true');
-    bait.style.cssText = 'position:absolute!important;left:-10000px!important;top:-10000px!important;display:block!important;width:12px!important;height:12px!important;';
-    // Tambahkan umpan ke overlay yang dikecualikan dari aturan access-checking.
-    // Jika diletakkan langsung di body, CSS html.access-checking menyembunyikannya
-    // dan pemeriksaan akan salah mengira AdBlock aktif pada semua pengunjung.
-    var host = document.getElementById('accessGuard') || document.body;
-    host.appendChild(bait);
-    var cs = window.getComputedStyle(bait);
-    var blocked = bait.offsetHeight === 0 || bait.offsetWidth === 0 || cs.display === 'none' || cs.visibility === 'hidden';
-    bait.remove();
-    return blocked;
+    // Deteksi konservatif: jangan blokir hanya karena satu elemen umpan gagal.
+    // Umpan ditaruh di dalam overlay yang dikecualikan dari aturan access-checking.
+    var host = document.getElementById('accessGuard') || document.body || document.documentElement;
+    var tests = [
+      { cls: 'adsbox', id: 'ag-bait-1' },
+      { cls: 'ad-unit', id: 'ag-bait-2' },
+      { cls: 'adsbygoogle', id: 'ag-bait-3' }
+    ];
+    var blockedCount = 0;
+    tests.forEach(function (test) {
+      var bait = document.createElement('div');
+      bait.className = test.cls;
+      bait.id = test.id;
+      bait.setAttribute('aria-hidden', 'true');
+      bait.style.cssText = 'position:absolute!important;left:-10000px!important;top:0!important;display:block!important;visibility:visible!important;opacity:1!important;width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;';
+      host.appendChild(bait);
+      var cs = window.getComputedStyle(bait);
+      var isHidden = bait.offsetWidth === 0 || bait.offsetHeight === 0 || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0;
+      if (isHidden) blockedCount++;
+      bait.remove();
+    });
+    // Dua dari tiga pemeriksaan harus gagal agar dianggap AdBlock.
+    return blockedCount >= 2;
   }
 
   function checkVpn() {
