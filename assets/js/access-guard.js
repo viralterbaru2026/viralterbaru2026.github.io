@@ -1,0 +1,100 @@
+(function () {
+  'use strict';
+  // Aktifkan mode pemeriksaan sebelum konten halaman ditampilkan.
+  document.documentElement.classList.add('access-checking');
+
+  function makeOverlay(title, message, detail, reload) {
+    var old = document.getElementById('accessGuard');
+    if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'accessGuard';
+    overlay.setAttribute('role', 'alertdialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'accessGuardTitle');
+    var card = document.createElement('div');
+    card.className = 'access-guard-card';
+    var h = document.createElement('h2');
+    h.id = 'accessGuardTitle'; h.textContent = title;
+    var p = document.createElement('p'); p.textContent = message;
+    var d = document.createElement('p'); d.className = 'access-guard-status'; d.textContent = detail || '';
+    card.appendChild(h); card.appendChild(p); card.appendChild(d);
+    if (reload) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'access-guard-reload';
+      b.textContent = 'Coba periksa lagi'; b.addEventListener('click', function () { location.reload(); });
+      card.appendChild(b);
+    }
+    overlay.appendChild(card);
+    (document.body || document.documentElement).appendChild(overlay);
+    return overlay;
+  }
+
+  function hasAdBlock() {
+    // Deteksi konservatif: jangan blokir hanya karena satu elemen umpan gagal.
+    // Umpan ditaruh di dalam overlay yang dikecualikan dari aturan access-checking.
+    var host = document.getElementById('accessGuard') || document.body || document.documentElement;
+    var tests = [
+      { cls: 'adsbox', id: 'ag-bait-1' },
+      { cls: 'ad-unit', id: 'ag-bait-2' },
+      { cls: 'adsbygoogle', id: 'ag-bait-3' }
+    ];
+    var blockedCount = 0;
+    tests.forEach(function (test) {
+      var bait = document.createElement('div');
+      bait.className = test.cls;
+      bait.id = test.id;
+      bait.setAttribute('aria-hidden', 'true');
+      bait.style.cssText = 'position:absolute!important;left:-10000px!important;top:0!important;display:block!important;visibility:visible!important;opacity:1!important;width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;';
+      host.appendChild(bait);
+      var cs = window.getComputedStyle(bait);
+      var isHidden = bait.offsetWidth === 0 || bait.offsetHeight === 0 || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0;
+      if (isHidden) blockedCount++;
+      bait.remove();
+    });
+    // Dua dari tiga pemeriksaan harus gagal agar dianggap AdBlock.
+    return blockedCount >= 2;
+  }
+
+  function checkVpn() {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 7000) : null;
+    var options = controller ? { cache: 'no-store', signal: controller.signal } : { cache: 'no-store' };
+    return fetch('https://hackmyip.com/api/score', options).then(function (res) {
+      if (!res.ok) throw new Error('VPN check unavailable');
+      return res.json();
+    }).then(function (json) {
+      var d = json && json.data ? json.data : {};
+      var privacy = d.privacy || {};
+      // Hanya gunakan indikator boolean yang eksplisit. Jangan blokir IP hanya karena
+      // dikategorikan datacenter/hosting atau teks flags/type yang sering false-positive.
+      return privacy.is_vpn === true || privacy.is_proxy === true || privacy.is_tor === true;
+    }).finally(function () { if (timer) clearTimeout(timer); });
+  }
+
+  function start() {
+    makeOverlay('Memeriksa akses', 'Mohon tunggu sebentar sementara koneksi dan pemblokir iklan diperiksa.', 'Pemeriksaan keamanan sedang berjalan…', false);
+    var adBlocked = false;
+    try { adBlocked = hasAdBlock(); } catch (e) {}
+    if (adBlocked) {
+      makeOverlay('AdBlock terdeteksi', 'Untuk mengunjungi website ini, matikan AdBlock atau pemblokir iklan pada browser Anda, lalu muat ulang halaman.', 'Konten tetap terkunci sampai pemeriksaan AdBlock lolos.', true);
+      return;
+    }
+    checkVpn().then(function (blocked) {
+      if (blocked) {
+        makeOverlay('VPN / Proxy terdeteksi', 'Akses ke website ini tidak tersedia saat menggunakan VPN, proxy, Tor, atau koneksi pusat data. Matikan VPN/proxy lalu muat ulang halaman.', 'Sistem menggunakan pemeriksaan IP pihak ketiga; deteksi tidak selalu sempurna.', true);
+      } else {
+        var overlay = document.getElementById('accessGuard');
+        if (overlay) overlay.remove();
+        document.documentElement.classList.remove('access-checking');
+      }
+    }).catch(function () {
+      // Jika layanan pemeriksaan pihak ketiga sedang gagal, izinkan akses agar situs tidak mati total.
+      var overlay = document.getElementById('accessGuard');
+      if (overlay) overlay.remove();
+      document.documentElement.classList.remove('access-checking');
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+  else start();
+})();
