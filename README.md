@@ -1,23 +1,48 @@
-# MOVIE
+# Viral Terbaru 2026
 
-Website video + panel admin dalam satu repository.
+Website video statis dengan halaman admin, pengaturan iklan, dan proses publikasi otomatis melalui GitHub Actions ke GitHub Pages.
 
-## Aturan inti
-- Kategori: Indonesia, Papua, Barat.
-- Slug otomatis dari judul + Part.
-- Part otomatis dihitung per kategori saat video baru dibuat.
-- Edit video tidak mengubah slug/Part.
-- Urutan website berdasarkan tanggal + jam publikasi, bukan waktu terakhir diedit.
-- Cover: `covers/[slug].jpg`.
-- OG cover: `covers/og/[slug].jpg`, 1200x630 px.
-- Google Drive player tetap digunakan.
-- `videos.json` adalah source of truth.
-- GitHub Actions menjalankan generator dan deploy ke GitHub Pages.
+## Fitur utama
 
-## Admin
-Buka `/admin/`. Panel memakai GitHub Personal Access Token yang dimasukkan sendiri oleh admin. Token hanya disimpan di sessionStorage browser. Token harus memiliki akses Contents: Read and write pada repository yang dikonfigurasi di Website Settings.
+- Kategori video: Indonesia, Papua, dan Barat.
+- Slug video dibuat otomatis dari judul dan Part.
+- Nomor Part dihitung otomatis per kategori saat video baru dibuat.
+- Mengedit video tidak mengubah slug atau Part yang sudah ada.
+- Urutan video mengikuti tanggal dan jam publikasi, bukan waktu terakhir diedit.
+- Halaman utama menampilkan navigasi nomor halaman di atas dan di bawah daftar video.
+- Cover video disimpan di `covers/[slug].jpg`.
+- Gambar Open Graph disimpan di `covers/og/[slug].jpg` dengan ukuran 1200 × 630 piksel.
+- Player Google Drive tetap didukung; URL embed dapat digunakan jika tersedia.
+- `videos.json` adalah sumber data video utama.
+- `config.json` menyimpan identitas website dan pengaturan iklan.
+- GitHub Actions menjalankan generator halaman dan deployment ke GitHub Pages.
+
+## Panel admin
+
+Panel admin dapat dibuka melalui `/admin/` setelah website ter-deploy.
+
+Panel menggunakan GitHub Personal Access Token (PAT) yang dimasukkan sendiri oleh admin. Token disimpan di `sessionStorage` pada browser, bukan ditulis ke file website. Token perlu memiliki izin **Contents: Read and write** untuk repository yang dipilih di pengaturan website.
+
+Jangan membagikan token kepada siapa pun dan jangan memasukkan token ke file publik atau commit Git.
+
+## Pengaturan website dan iklan
+
+Melalui panel admin, admin dapat mengatur nama dan URL website serta konfigurasi iklan yang tersedia di proyek. Gunakan kode dan URL iklan milik sendiri. Periksa pengaturan iklan sebelum mengaktifkannya di website produksi.
+
+## Pemeriksaan AdBlock dan VPN/proxy
+
+Proyek ini dapat menggunakan `assets/js/access-guard.js` untuk memeriksa pemblokir iklan dan koneksi VPN/proxy yang dikenali.
+
+- Jika AdBlock terdeteksi, pengunjung melihat pesan agar pemblokir iklan dinonaktifkan dan halaman dimuat ulang.
+- Pemeriksaan VPN menggunakan layanan pihak ketiga HackMyIP (`https://hackmyip.com/api/score`). Jika respons layanan menandai IP sebagai VPN, proxy, Tor, atau pusat data, akses ditahan dan pengunjung diminta mematikan layanan tersebut.
+- Jika layanan pemeriksaan pihak ketiga gagal atau tidak dapat dijangkau, implementasi saat ini mengizinkan akses agar website tidak terkunci karena gangguan layanan.
+
+**Batasan penting:** pemeriksaan ini berjalan di sisi browser, bukan firewall server. Deteksi VPN/proxy dan AdBlock tidak sempurna; VPN baru dapat lolos dan koneksi biasa bisa salah terdeteksi. Karena GitHub Pages adalah hosting statis, pemeriksaan ini bukan pengganti kontrol akses di sisi server. Perilaku pemeriksaan dapat berubah jika layanan pihak ketiga mengubah API, dan penggunaan layanan eksternal tunduk pada ketersediaan serta kebijakan privasinya.
 
 ## Data publikasi
+
+Contoh nilai tanggal dan jam publikasi di data video:
+
 ```json
 {
   "tanggal": "2026-09-19",
@@ -25,21 +50,39 @@ Buka `/admin/`. Panel memakai GitHub Personal Access Token yang dimasukkan sendi
 }
 ```
 
-## Migrasi
-Data lama dapat diimpor melalui `scripts/import_legacy.py` setelah URL legacy diisi secara manual jika diperlukan. Script hanya membaca `videos.json` lama; folder `covers/` lama tidak dibaca.
+## Struktur file penting
 
-## GitHub Pages
-Setelah upload ke branch `main`, buka Settings → Pages dan pilih GitHub Actions sebagai Source.
+- `videos.json` — data video utama.
+- `config.json` — konfigurasi website dan iklan.
+- `generate.py` — generator halaman HTML.
+- `templates/` — template halaman utama dan halaman video.
+- `assets/css/style.css` — gaya tampilan website.
+- `assets/js/` — JavaScript website, termasuk pemeriksaan akses bila diaktifkan.
+- `admin/` — panel administrasi.
+- `covers/` — cover dan gambar Open Graph.
+- `videos/` — halaman HTML video hasil generator.
+- `.github/workflows/deploy.yml` — workflow build/deploy GitHub Actions.
 
-## Copy ke repository baru (testing)
+## Deployment ke GitHub Pages
 
-Source ini dirancang agar dapat disalin ke repository GitHub baru tanpa mengedit `generate.py`, template HTML, atau player.
+1. Unggah atau commit perubahan ke branch `main`.
+2. Di GitHub, buka **Settings → Pages**.
+3. Pilih **GitHub Actions** sebagai Source jika belum dipilih.
+4. Buka tab **Actions** dan pastikan workflow deploy selesai dengan status berhasil.
+5. Buka website dan lakukan hard refresh (`Ctrl+F5`) untuk memuat file terbaru.
 
-Setelah source disalin:
-1. Pastikan branch yang digunakan adalah `main`.
-2. Buka `/admin/`.
-3. Masukkan GitHub Owner, Repository, Branch, dan token milik repository tersebut.
-4. Pada **Website Settings**, isi Nama Website dan URL Website, lalu simpan.
-5. Pada **Adsterra Settings**, masukkan kode iklan milik website tersebut jika ingin mengaktifkan iklan.
+Jangan menghapus `videos.json`, `config.json`, atau file konfigurasi repository saat menerapkan pembaruan.
 
-`config.json` menyimpan identitas website, repository, dan pengaturan Adsterra. `templates/video.html` dan player Google Drive tidak diubah oleh mekanisme konfigurasi ini.
+## Menyalin proyek ke repository lain
+
+1. Salin source proyek ke repository GitHub tujuan.
+2. Pastikan branch yang dipakai sesuai dengan workflow (umumnya `main`).
+3. Buka `/admin/` setelah deployment.
+4. Masukkan GitHub Owner, Repository, Branch, dan token untuk repository tujuan.
+5. Di **Website Settings**, isi nama dan URL website lalu simpan.
+6. Di **Adsterra Settings**, isi kode iklan milik website tersebut jika ingin menggunakan iklan.
+7. Periksa pengaturan dan jalankan pengujian sebelum membagikan website.
+
+## Migrasi data lama
+
+Data lama dapat diimpor melalui `scripts/import_legacy.py` setelah URL legacy diisi secara manual bila diperlukan. Script tersebut membaca `videos.json` lama; folder `covers/` lama tidak dibaca secara otomatis.
